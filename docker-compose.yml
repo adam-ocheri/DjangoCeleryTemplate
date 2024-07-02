@@ -1,0 +1,75 @@
+version: '3'
+services:
+  mainapp:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: mainapp
+    container_name: dekel_api
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery_worker
+    container_name: dekel_celery_worker
+    volumes:
+      - .:/app
+    # env_file:
+    #   - .env
+    environment:
+      - DOCKER_DEBUG=False
+    ports:
+      - 6900:6900
+    
+  
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery_beat
+    container_name: dekel_celery_beat
+    volumes:
+      - .:/app
+    # env_file:
+    #   - .env
+    environment:
+      - DOCKER_DEBUG=False
+    
+
+  rabbitmq:
+    restart: always
+    image: rabbitmq:latest
+    container_name: dekel_rabbit_mq
+    environment:
+      RABBITMQ_DEFAULT_VHOST: "/"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    
+
+  # flower_worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: flower_worker
+  #   container_name: dekel_flower_worker
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     # - backend
+  #     - celery_worker
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - DOCKER_DEBUG=False
+  #   ports:
+  #     - "5555:5555"
+  #   restart: unless-stopped
+  

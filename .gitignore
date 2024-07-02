@@ -1,0 +1,9 @@
+env/
+__pycache__/
+dist
+build/
+dist/
+*.egg-info/
+*.log
+celerybeat-schedule
+*/migrations/*
