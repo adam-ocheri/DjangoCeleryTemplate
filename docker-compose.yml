@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: mainapp
-    container_name: dekel_api
+    container_name: server_api
     volumes:
       - ./:/app
     ports:
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: celery_worker
-    container_name: dekel_celery_worker
+    container_name: server_celery_worker
     volumes:
       - .:/app
     # env_file:
@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: celery_beat
-    container_name: dekel_celery_beat
+    container_name: server_celery_beat
     volumes:
       - .:/app
     # env_file:
@@ -47,7 +47,7 @@ services:
   rabbitmq:
     restart: always
     image: rabbitmq:latest
-    container_name: dekel_rabbit_mq
+    container_name: server_rabbit_mq
     environment:
       RABBITMQ_DEFAULT_VHOST: "/"
       RABBITMQ_DEFAULT_USER: "guest"
@@ -59,7 +59,7 @@ services:
   #     context: .
   #     dockerfile: Dockerfile
   #     target: flower_worker
-  #   container_name: dekel_flower_worker
+  #   container_name: server_flower_worker
   #   volumes:
   #     - .:/app
   #   depends_on:
