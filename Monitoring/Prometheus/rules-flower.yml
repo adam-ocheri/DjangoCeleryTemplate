@@ -1,0 +1,29 @@
+groups:
+  - name: flower_alerts
+    rules:
+      - alert: "Celery(via.Flower) Workers Metric Absent"
+        expr: absent(flower_worker_online)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celery Worker metric is absent"
+          description: "Prometheus cannot find the flower_worker_online metric for more than 1 minute."
+
+      - alert: "Celery(via.Flower) Workers Down"
+        expr: flower_worker_online == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celery Worker is down"
+          description: "The Celery Worker has been down for more than 1 minute."
+
+      # - alert: "Celery Queues Down"
+      #   expr: active_queues == 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "Celery has no active queues to handle jobs!"
+      #     description: "The Celery queues has been down for more than 1 minute."

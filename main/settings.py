@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-iuv^0&=4eu#m%@(67g!0xgwgc40t5lihe%u*od9t9q5^(+v6*4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "mainapp"]
 
 
 # Application definition
@@ -46,9 +46,11 @@ INSTALLED_APPS = [
     "corsheaders",
     "celery",
     "django_celery_beat",
+    "django_prometheus"
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware"
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -149,6 +152,7 @@ APPEND_SLASH = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = [os.getenv("CELERY_ACCEPT_CONTENT")]
 CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER")

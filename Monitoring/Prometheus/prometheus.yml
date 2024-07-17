@@ -1,0 +1,42 @@
+global:
+  scrape_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 'alertmanager:9093'
+
+rule_files:
+  - "rules-global.yml"
+  - "rules-celery.yml"
+  - "rules-flower.yml"
+  - "rules-rabbitmq.yml"
+  - "rules-django.yml"
+  - "rules-node-exporter.yml"
+
+scrape_configs:
+  - job_name: 'Prometheus | Self Health'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: "Celery | Workers Health"           # An example of a custom self made metrics endpoint ()
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['mainapp:8000']
+
+  - job_name: 'Flower | Celery Task Monitoring'
+    static_configs:
+      - targets: ['flower:5555']
+
+  - job_name: 'Django | Main Server API'
+    static_configs:
+      - targets: ['mainapp:8000']
+
+  - job_name: 'SERVER | Host Machine Health'
+    static_configs:
+      - targets: ['node_exporter:9100']
+
+  - job_name: 'RabbitMQ | Message Broker'
+    static_configs:
+      - targets: ['rabbitmq:15692']

@@ -1,4 +1,9 @@
-version: '3'
+version: '3.6'
+
+volumes:
+  grafana_data:
+  rabbitmq-prometheus_prometheus:
+
 services:
   mainapp:
     build: 
@@ -12,7 +17,6 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    
 
   celery_worker:
     build:
@@ -28,8 +32,7 @@ services:
       - DOCKER_DEBUG=False
     ports:
       - 6900:6900
-    
-  
+
   celery_beat:
     build:
       context: .
@@ -42,34 +45,98 @@ services:
     #   - .env
     environment:
       - DOCKER_DEBUG=False
-    
 
   rabbitmq:
-    restart: always
-    image: rabbitmq:latest
-    container_name: server_rabbit_mq
+    # https://hub.docker.com/r/pivotalrabbitmq/rabbitmq/tags
+    image: pivotalrabbitmq/rabbitmq:main
+    container_name: rabbitmq_broker
+    ports:
+      - "15673:15672"
+      - "15693:15692"
+    # https://unix.stackexchange.com/questions/71940/killing-tcp-connection-in-linux
+    # https://en.wikipedia.org/wiki/Tcpkill
+    # https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands#block-an-ip-address
+    cap_add:
+      - ALL
+    hostname: rabbitmq
     environment:
+      RABBITMQ_ERLANG_COOKIE: rabbitmq-prometheus
       RABBITMQ_DEFAULT_VHOST: "/"
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
-    
+      # Uncomment the following line if you want debug logs & colour
+      # RABBITMQ_LOG: debug,+color
+    # Uncomment the following 2 lines in order to deactivate deprecated metric collection features
+    # volumes:
+      # - ./Monitoring/RabbitMQ/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
 
-  # flower_worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: flower_worker
-  #   container_name: server_flower_worker
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     # - backend
-  #     - celery_worker
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - DOCKER_DEBUG=False
-  #   ports:
-  #     - "5555:5555"
-  #   restart: unless-stopped
-  
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: flower
+    container_name: flower_metric_collector
+    volumes:
+      - .:/app
+    depends_on:
+      - celery_worker
+    env_file:
+      - .env
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=True
+      - DOCKER_DEBUG=False
+    ports:
+      - "5555:5555"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: server_prometheus
+    volumes:
+      - ./Monitoring/Prometheus/:/etc/prometheus/
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mainapp
+      - celery_worker
+      - flower
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: server_prom_alertmanager
+    volumes:
+      - ./Monitoring/AlertMan/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    depends_on:
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: server_grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./Monitoring/Grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./Monitoring/Grafana/provisioning:/etc/grafana/provisioning
+
+  node_exporter:
+    container_name: prometheus_node_exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    image: prom/node-exporter:v1.2.0
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro

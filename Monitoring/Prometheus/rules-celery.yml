@@ -1,0 +1,30 @@
+groups:
+  - name: celery_flower_custom_alerts
+    rules:
+
+      - alert: "Celery Worker is Unresponsive"
+        expr: changes(worker_uptime{worker=~".*"}[1m]) == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celery Worker (worker_uptime) metric is not changing"
+          description: "Prometheus encountered a celery worker being frozen and unresponsive for more than 1 minute."
+
+      - alert: "Celery Queues Metric Absent"
+        expr: absent(active_queues)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celery Queues metric is absent"
+          description: "Prometheus cannot find the active_queues metric for more than 1 minute."
+
+      - alert: "Celery Queues Down"
+        expr: active_queues == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celery has no active queues to handle jobs!"
+          description: "The Celery queues has been down for more than 1 minute."

@@ -1,0 +1,20 @@
+groups:
+  - name: rabbitmq_alerts
+    rules:
+      - alert: "RabbitMQ Broker is down"
+        expr: absent(rabbitmq_connections_opened_total)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical RabbitMQ metric is absent"
+          description: "Prometheus cannot find the rabbitmq_connections_opened_total metric for more than 1 minute."
+
+      - alert: "RabbitMQ Broker "
+        expr: rabbitmq_connections_opened_total == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ connections are missing"
+          description: "RabbitMQ has no open connections."

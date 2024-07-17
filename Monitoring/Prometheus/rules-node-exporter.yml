@@ -1,0 +1,38 @@
+groups:
+- name: node-exporter-alerts
+  rules:
+  - alert: "SERVER - High CPU Usage"
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 80
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: High CPU usage on {{ $labels.instance }}
+      description: CPU usage is above 80% for more than 1 minutes.
+  
+  - alert: "SERVER - Low Disk Space"
+    expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay",mountpoint!~"/run/.*|/sys/fs/cgroup"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay",mountpoint!~"/run/.*|/sys/fs/cgroup"}) < 0.15
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Low Disk Space on {{ $labels.instance }}
+      description: Disk space is less than 15% on {{ $labels.instance }}.
+
+  - alert: "SERVER - High Memory Usage"
+    expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.60
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: High Memory Usage on {{ $labels.instance }}
+      description: Available memory is less than 40% on {{ $labels.instance }}.
+
+  - alert: "SERVER - Network Issues"
+    expr: rate(node_network_receive_errs_total[1m]) > 1 or rate(node_network_transmit_errs_total[1m]) > 1
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: Network Issues on {{ $labels.instance }}
+      description: Network errors are occurring on {{ $labels.instance }}.

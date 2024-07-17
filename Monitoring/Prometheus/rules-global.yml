@@ -1,0 +1,11 @@
+groups:
+  - name: prometheus_globals
+    rules:
+      - alert: "Prometheus Target is Down"
+        expr: up == 0
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "A prometheus Target is down"
+          description: "Prometheus encountered a Target crashing and not restarting for more than 1 minute."

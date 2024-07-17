@@ -1,0 +1,21 @@
+groups:
+  - name: django_alerts
+    rules:
+      - alert: "Django Is Not Responding"
+        expr: changes(django_http_requests_total_by_method_total{method="GET"}[1m]) == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Django server unresponsive"
+          description: "Prometheus encountered a lack of response from the django server more than 1 minute. The server may be down, stuck or unresponsive."
+
+      - alert: "Django Queues Metric Absent"
+        expr: absent(django_http_requests_total_by_method_total{method="GET"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Django critical metric is absent"
+          description: "Prometheus cannot find the django_http_requests_total_by_method_total metric for more than 1 minute."
+

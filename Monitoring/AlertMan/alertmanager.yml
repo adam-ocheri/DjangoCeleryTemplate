@@ -1,0 +1,38 @@
+
+#####################################################################################################
+# *Link_01* | To generate an app password for a Google GMail account, visit this link:
+# 
+# https://accounts.google.com/v3/signin/challenge/pwd?TL=ALoj5AqF84DyMH7UUrSwPhp4eMANJUMGMM57nfGAJxqgyzm5NrH_GB8mG8PygLQj&cid=2&continue=https://myaccount.google.com/apppasswords?pli%3D1%26rapt%3DAEjHL4POzc7S0Chqb6iWxjYdeUEhzaSHOC3GgTHMXPVdbNHkzqDsFFTnSpygHWDjqoQhJqcuGbSRTK83mWl7zQh2stBqvdS0cDkIQgm8jFnUJbzev5t8DPs&flowName=GlifWebSignIn&followup=https://myaccount.google.com/apppasswords?pli%3D1%26rapt%3DAEjHL4POzc7S0Chqb6iWxjYdeUEhzaSHOC3GgTHMXPVdbNHkzqDsFFTnSpygHWDjqoQhJqcuGbSRTK83mWl7zQh2stBqvdS0cDkIQgm8jFnUJbzev5t8DPs&ifkv=AdF4I76MXPXI1fbk124e3D_xDi0dH4klW5WFIXEr5iRIYfmswEXeh4yDm2RlkIt1X7txlya5AoRd&osid=1&rart=ANgoxcf-VGFEo1b0zEgHVve9Ap6g1SLkTkyYh2oDMFaI7BaBzlGMpfL8FZSW5_AH_6a2U7Km-PSspGiQPJgW9_He-ZqW5kk4rdYrhgzs_a1w8GJVc2EiBCk&rpbg=1&service=accountsettings&hl=en_US
+#
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 
+# *Link_02* | If you are unable to create an App Password with this link, visit this link for more info:
+#
+# https://kinsta.com/blog/gmail-smtp-server/
+# 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 
+# *Link_03* | If you are unable to sign in using your credentials, visit this link:
+# 
+# https://support.google.com/mail/?p=BadCredentials
+#####################################################################################################
+
+global:
+  smtp_require_tls: true 
+  smtp_smarthost: 'smtp.gmail.com:587'           # This is the default gateway for SMTP messages for GMail
+  smtp_from: 'example-sender@gmail.com'          # This account must have 2FA enabled OR you will have to enable 2FA for it
+  smtp_auth_username: 'example-sender@gmail.com' # This account must have 2FA enabled OR you will have to enable 2FA for it
+  smtp_auth_password: 'rdxh xfue rbgy drsn'      # This is an app password generated for the 'smtp_from' account at `*Link_01*`
+
+#Root alert route
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 30s
+  group_interval: 1m
+  repeat_interval: 2m
+  receiver: 'email_alert_default_receiver'
+
+receivers:
+  - name: 'email_alert_default_receiver'
+    email_configs:
+      - to: 'example-receiver@gmail.com'
