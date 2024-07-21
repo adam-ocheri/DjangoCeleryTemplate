@@ -21,6 +21,14 @@
 - Simply build the images and run the containers via `$ docker-compose up`
 
 ## Monitoring
+This project comes with a `Monitoring` configuration setup, for tracking the stats and health of the server and containers.
+These are the components and their basic use:
+  - **Prometheus** - Used to scrape metrics regarding the running containers and the server
+    - **AlertManager** - Will push alerts once a Rule has been triggered (only email setup, needs personal details to be filled)
+    - **NodeExporter** - A service that scrapes metrics from the host system (i.e the actual server host machine)
+  - **Grafana** - Displays the collected metrics in dashboards
+
+These services are all pre-defined to be scraping data from all containers involved (RabbitMQ, Django, Celery, ...), including the host server itself (NodeExporter).
 - You can monitor the health of the DockerCompose stack by visiting `http://127.0.0.1:9090/` via prometheus
+- You can enter and see your Grafana boards at `http://127.0.0.1:3000/`, with the default username `admin` and password `admin`
 - You can modify the `alertmanager.yml` and follow the instructions to include a mail addresses to which alerts would get to (and be sent from)
-- You can enter and see your Grafana boards at `127.0.0.1:3000`, with the default username `admin` and password `admin`
